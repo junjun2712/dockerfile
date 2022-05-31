@@ -1,0 +1,45 @@
+FROM centos:centos7.2.1511
+
+LABEL title="python3.8"
+
+RUN yum -y  install wget zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gcc make which libffi-devel
+RUN  rm -rf /var/cache/yum/* \
+RUN  yum clean all
+
+WORKDIR /root
+RUN curl -LO 'https://www.cpan.org/src/5.0/perl-5.28.0.tar.gz' -k
+
+RUN tar -zxvf perl-5.28.0.tar.gz 
+
+RUN cd perl-5.28.0 && ./Configure -des -Dprefix=$HOME/localperl && make && make install
+
+
+WORKDIR /root
+
+RUN curl -LO 'https://www.openssl.org/source/openssl-1.1.0h.tar.gz' -k
+
+RUN tar -xf openssl-1.1.0h.tar.gz
+
+RUN cd openssl-1.1.0h && \
+./config shared --prefix=/usr/local/openssl11 --openssldir=/usr/local/openssl11 && make && make install
+
+WORKDIR /root
+
+RUN wget https://www.python.org/ftp/python/3.8.12/Python-3.8.12.tgz
+
+RUN tar xvf Python-3.8.12.tgz
+
+WORKDIR /root/Python-3.8.12
+
+RUN ./configure --prefix=/usr/local/python3 --with-openssl=/usr/local/openssl && make && make install
+
+RUN mv /usr/bin/python /usr/bin/python.bak
+
+RUN ln -s /usr/local/python3/bin/python3 /usr/bin/python
+
+RUN ln -s /usr/local/python3/bin/pip3 /usr/bin/pip
+
+ENV PATH=$PATH:/usr/local/python3/bin
+
+
+docker run -itd  -p 6699:6699 --name python38-fastapi aa04bf2c94bb
